@@ -42,7 +42,7 @@ st.markdown("""
 def main():
     # Header
     st.markdown('<h1 class="main-header">InfoCodec</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="subtitle">Information Coding & Encoding • Exploring Shannon\'s Information Theory</p>', 
+    st.markdown('<p class="subtitle">Information Encoding & Decoding • Exploring Shannon\'s Information Theory</p>', 
                 unsafe_allow_html=True)
     
     # Sidebar
