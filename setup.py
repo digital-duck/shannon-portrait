@@ -67,13 +67,13 @@ setup(
     entry_points={
         "console_scripts": [
             "infocodec=infocodec.cli:cli",
+            "infocodec-ui=infocodec.cli:ui",
         ],
     },
     package_data={
         "infocodec": [
             "ui/pages/*.py",
             "ui/components/*.py",
-            "data/images/*.png",
         ],
     },
     include_package_data=True,

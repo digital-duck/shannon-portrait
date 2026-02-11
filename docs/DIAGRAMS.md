@@ -468,7 +468,7 @@ sequenceDiagram
     CLI-->>User: Comparison report
     
     Note over User,Metrics: UI Command
-    User->>CLI: infocodec ui
+    User->>CLI: infocodec-ui
     CLI->>CLI: Launch streamlit
     activate CLI
     Note right of CLI: Opens browser<br/>to localhost:8501

@@ -270,7 +270,7 @@ shannon-portrait/
 │   │           ├── sparse.py           ✅
 │   │           └── dct.py              ✅
 │   ├── ui/                             # Streamlit UI
-│   │   ├── app.py                      # Main app
+│   │   ├── InfoCoDec.py                # Main app
 │   │   └── pages/
 │   │       ├── 1_⚙️_Settings.py        ✅ Complete
 │   │       ├── 2_📤_Encode.py          ✅ Complete
@@ -326,7 +326,7 @@ Before committing to GitHub, verify:
 - [ ] `infocodec encode` works with all 6 methods
 - [ ] `infocodec decode` reconstructs correctly
 - [ ] `infocodec benchmark` compares methods
-- [ ] `infocodec ui` launches Streamlit
+- [ ] `infocodec-ui` launches Streamlit
 
 ### UI
 - [ ] Settings page loads and saves

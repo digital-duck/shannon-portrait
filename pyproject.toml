@@ -67,12 +67,13 @@ Repository = "https://github.com/yourusername/shannon-portrait"
 
 [project.scripts]
 infocodec = "infocodec.cli:cli"
+infocodec-ui = "infocodec.cli:ui"
 
 [tool.setuptools]
 packages = ["infocodec"]
 
 [tool.setuptools.package-data]
-infocodec = ["ui/pages/*.py", "ui/components/*.py", "data/images/*.png"]
+infocodec = ["ui/pages/*.py", "ui/components/*.py"]
 
 [tool.black]
 line-length = 100

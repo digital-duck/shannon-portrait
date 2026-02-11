@@ -9,19 +9,30 @@ import streamlit as st
 import os
 from pathlib import Path
 
+from infocodec.utils.openrouter import get_api_key, OpenRouterKeyError
+
 st.set_page_config(page_title="Settings - InfoCodec", page_icon="⚙️", layout="wide")
 
 st.title("⚙️ Settings")
 st.markdown("Configure algorithms, LLM integration, and application preferences.")
 
-# Initialize session state
+# --- Resolve API key once per session ----------------------------------
+# Resolution order: .env file → os.environ → empty string (user must enter manually)
 if 'settings' not in st.session_state:
+    try:
+        _resolved_key = get_api_key()
+        _key_source = "auto-resolved"
+    except OpenRouterKeyError:
+        _resolved_key = ""
+        _key_source = "not found"
+
     st.session_state.settings = {
         'compression_method': 'auto',
         'quality_level': 1.0,
         'block_size': 8,
         'enable_cache': True,
-        'openrouter_api_key': '',
+        'openrouter_api_key': _resolved_key,
+        'openrouter_key_source': _key_source,
         'llm_model': 'anthropic/claude-3.5-sonnet',
         'llm_temperature': 0.7,
         'llm_max_tokens': 2000,
@@ -133,30 +144,53 @@ with tab2:
     """)
     
     col1, col2 = st.columns([2, 1])
-    
+
     with col1:
-        # API Key input
+        # Show resolution source as contextual hint
+        _key_source = st.session_state.settings.get('openrouter_key_source', 'not found')
+        if _key_source == "auto-resolved":
+            st.caption("🔑 Key auto-resolved from .env or environment variable")
+        else:
+            st.caption(
+                "🔑 Key not found in .env or environment — enter it below, "
+                "or set OPENROUTER_API_KEY in your shell / .env file"
+            )
+
+        # API Key input — pre-populated if auto-resolved
         api_key = st.text_input(
             "OpenRouter API Key",
             value=st.session_state.settings.get('openrouter_api_key', ''),
             type="password",
-            help="Get your API key from https://openrouter.ai/keys"
+            help="Resolution order: .env file → OPENROUTER_API_KEY env var → manual entry"
         )
         st.session_state.settings['openrouter_api_key'] = api_key
-        
+
         if api_key:
             # Test connection button
             if st.button("🔍 Test Connection"):
                 with st.spinner("Testing API connection..."):
-                    # Placeholder for actual test
-                    st.success("✅ Connection successful!")
-            
-            # Also save to environment
-            if st.checkbox("Save API key to environment variable", value=False):
+                    try:
+                        from infocodec.utils.openrouter import get_client
+                        client = get_client(api_key=api_key)
+                        # Minimal probe: list models (cheap, no token cost)
+                        client.models.list()
+                        st.success("✅ Connection successful!")
+                    except Exception as exc:
+                        st.error(f"❌ Connection failed: {exc}")
+
+            # Persist to environment for the current process
+            if st.checkbox("Save API key to environment variable (current session)", value=False):
                 os.environ['OPENROUTER_API_KEY'] = api_key
-                st.success("✅ Saved to OPENROUTER_API_KEY environment variable")
+                st.success("✅ Saved to OPENROUTER_API_KEY for this process")
         else:
-            st.warning("⚠️ No API key configured. Report generation will be disabled.")
+            st.error(
+                "OPENROUTER_API_KEY is not configured. "
+                "Report generation will be disabled until a key is provided.\n\n"
+                "Fix (choose one):\n"
+                "• Set `OPENROUTER_API_KEY=sk-or-...` in your project `.env` file\n"
+                "• Export `OPENROUTER_API_KEY` in your shell before launching\n"
+                "• Paste the key directly in the field above"
+            )
     
     with col2:
         st.markdown("### 🔗 Links")

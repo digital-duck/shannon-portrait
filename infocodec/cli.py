@@ -16,6 +16,12 @@ import time
 from infocodec.core.compressors import COMPRESSORS
 from infocodec.core.metrics import comprehensive_quality_analysis, format_metrics_report
 from infocodec.utils.image_utils import load_image, save_image, detect_media_type
+from infocodec.utils.paths import (
+    get_output_dir,
+    make_output_filename,
+    quality_qualifier,
+    sampling_rate_qualifier,
+)
 
 
 @click.group()
@@ -78,53 +84,58 @@ def _encode_image(input_path, method, output_path, quality, verbose):
     image = load_image(input_path)
     if verbose:
         click.echo(f"✓ Loaded image: {image.shape}")
-    
+
     # Auto-detect best method if requested
     if method == 'auto':
         method = _auto_select_method(image, verbose)
         click.echo(f"🤖 Auto-selected method: {method}")
-    
+
     # Get compressor
     compressor_class = COMPRESSORS.get(method)
     if not compressor_class:
         click.echo(f"❌ Unknown method: {method}", err=True)
         sys.exit(1)
-    
+
     # Compress
     click.echo(f"⚡ Compressing with {method}...")
     start_time = time.time()
-    
+
     compressor = compressor_class(quality=quality)
     compressed_bytes, metadata = compressor.compress(image)
-    
+
     elapsed = time.time() - start_time
-    
-    # Determine output path
+
+    # Determine output path using naming convention
+    # {stem}_image_{method}[_{qualifier}].dat
     if not output_path:
-        output_path = Path(input_path).with_suffix('.dat')
-    
+        stem = Path(input_path).stem
+        qualifier = quality_qualifier(quality) if quality < 1.0 else None
+        filename = make_output_filename(stem, "image", method, "dat", qualifier=qualifier)
+        output_path = get_output_dir("image") / filename
+
     # Save compressed data
     output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, 'wb') as f:
         # Write metadata as JSON header
         metadata_json = json.dumps(metadata)
         metadata_bytes = metadata_json.encode('utf-8')
-        
+
         # Write: [metadata_length(4 bytes)][metadata][compressed_data]
         f.write(len(metadata_bytes).to_bytes(4, byteorder='big'))
         f.write(metadata_bytes)
         f.write(compressed_bytes)
-    
-    # Save metadata separately
+
+    # Save sidecar metadata with matching name
     metadata_path = output_path.with_suffix('.json')
     with open(metadata_path, 'w') as f:
         json.dump(metadata, f, indent=2)
-    
+
     # Statistics
     stats = compressor.get_stats()
     original_size = image.size * image.itemsize
     compressed_size = len(compressed_bytes)
-    
+
     click.echo(f"\n✅ Compression complete!")
     click.echo(f"   Time: {elapsed:.3f}s")
     click.echo(f"   Original: {original_size:,} bytes")
@@ -132,7 +143,7 @@ def _encode_image(input_path, method, output_path, quality, verbose):
     click.echo(f"   Ratio: {original_size/compressed_size:.2f}x")
     click.echo(f"   Output: {output_path}")
     click.echo(f"   Metadata: {metadata_path}")
-    
+
     if verbose:
         click.echo(f"\n📊 Detailed Stats:")
         for key, value in stats.items():
@@ -202,9 +213,14 @@ def decode(input_path, output_path, verbose):
     
     method = metadata.get('method', 'Unknown')
     click.echo(f"⚡ Decompressing with {method}...")
-    
-    # Get reconstructor
-    reconstructor_class = RECONSTRUCTORS.get(method.lower())
+
+    # Normalise method name to registry key.
+    # Handles both the short form ('huffman') and old class-name form
+    # ('HuffmanCompressor') that may exist in previously written .dat files.
+    method_key = (method.lower()
+                  .replace('compressor', '')
+                  .replace('reconstructor', ''))
+    reconstructor_class = RECONSTRUCTORS.get(method_key)
     
     if not reconstructor_class:
         click.echo(f"❌ Unknown method: {method}", err=True)
@@ -213,18 +229,25 @@ def decode(input_path, output_path, verbose):
     
     try:
         start_time = time.time()
-        
+
         reconstructor = reconstructor_class()
         reconstructed = reconstructor.reconstruct(compressed_bytes, metadata)
-        
+
         elapsed = time.time() - start_time
-        
-        # Determine output path
+
+        # Determine output path using naming convention
+        # {stem}_image_{method}_reconstructed.png  (stem derived from the .dat filename)
         if not output_path:
-            output_path = Path(input_path).with_suffix('.reconstructed.png')
-        
+            stem = Path(input_path).stem  # e.g. 'shannon_portrait_image_huffman'
+            filename = make_output_filename(stem, "image", method.lower(), "png",
+                                           suffix="reconstructed")
+            output_path = get_output_dir("image") / filename
+
+        output_path = Path(output_path)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
         # Save reconstructed image
-        save_image(reconstructed, output_path)
+        save_image(reconstructed, str(output_path))
         
         # Get stats
         stats = reconstructor.get_stats()
@@ -322,16 +345,22 @@ def benchmark(input_path, methods, output_dir, format):
     elif format == 'markdown':
         _print_markdown(results)
     
-    # Save to file if output directory specified
+    # Save to file — default to data/output/{media_type}/ when no dir given
+    media_type = detect_media_type(input_path)
+    stem = Path(input_path).stem
+    methods_tag = "all" if methods == "all" else methods.replace(",", "-")
+    bench_filename = make_output_filename(stem, media_type, methods_tag, "json",
+                                         prefix="benchmark")
     if output_dir:
-        output_dir = Path(output_dir)
-        output_dir.mkdir(parents=True, exist_ok=True)
-        
-        output_file = output_dir / f"benchmark_{Path(input_path).stem}.json"
-        with open(output_file, 'w') as f:
-            json.dump(results, f, indent=2)
-        
-        click.echo(f"\n💾 Results saved to: {output_file}")
+        output_file = Path(output_dir) / bench_filename
+        Path(output_dir).mkdir(parents=True, exist_ok=True)
+    else:
+        output_file = get_output_dir(media_type) / bench_filename
+
+    with open(output_file, 'w') as f:
+        json.dump(results, f, indent=2)
+
+    click.echo(f"\n💾 Results saved to: {output_file}")
 
 
 def _print_table(results):
@@ -363,11 +392,11 @@ def _print_markdown(results):
                   f"{r['time_sec']:.3f}s | {r['entropy']:.2f} |")
 
 
-@cli.command()
+@click.command()
 def ui():
     """
     Launch Streamlit UI.
-    
+
     Opens the interactive web interface for visual exploration.
     """
     import subprocess
@@ -377,7 +406,7 @@ def ui():
     click.echo("   Press Ctrl+C to stop")
     
     # Find streamlit app path
-    app_path = Path(__file__).parent / "ui" / "app.py"
+    app_path = Path(__file__).parent / "ui" / "InfoCoDec.py"
     
     if not app_path.exists():
         click.echo(f"❌ Streamlit app not found at: {app_path}", err=True)

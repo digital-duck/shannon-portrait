@@ -42,8 +42,10 @@ class SparseCompressor(ImageCompressor):
             compressed_bytes: Sparse sampled pixels + positions
             metadata: Image dimensions and sampling info
         """
-        # Preprocess
+        # Preprocess — Sparse uses 2D (row, col) coordinates, so reduce to grayscale
         image = self._preprocess_image(data)
+        if image.ndim == 3:
+            image = np.dot(image[..., :3], [0.299, 0.587, 0.114]).astype(np.uint8)
         height, width = image.shape
         
         # Sample pixels

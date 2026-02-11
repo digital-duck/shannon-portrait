@@ -82,17 +82,17 @@ infocodec encode --input examples/shannon.png --method auto
 infocodec benchmark --input examples/shannon.png --methods all
 
 # Launch UI
-infocodec ui
+infocodec-ui
 ```
 
 ### Streamlit UI
 
 ```bash
 # Start the web interface
-streamlit run infocodec/ui/app.py
+streamlit run infocodec/ui/InfoCoDec.py
 
 # Or use the CLI shortcut
-infocodec ui
+infocodec-ui
 ```
 
 The UI will open in your browser at http://localhost:8501
@@ -135,7 +135,7 @@ infocodec benchmark --input test.png --methods all --output results/ --format js
 
 ```bash
 # Launch Streamlit
-infocodec ui
+infocodec-ui
 ```
 
 Then:
@@ -250,7 +250,7 @@ pip install streamlit
 Then run:
 
 ```bash
-streamlit run infocodec/ui/app.py
+streamlit run infocodec/ui/InfoCoDec.py
 ```
 
 ### Issue: OpenRouter API errors

@@ -9,6 +9,24 @@ from typing import Any, Dict, Tuple
 import numpy as np
 
 
+def _registry_key(class_name: str) -> str:
+    """
+    Derive the registry lookup key from a class name.
+
+    'HuffmanCompressor'    -> 'huffman'
+    'RLECompressor'        -> 'rle'
+    'DCTCompressor'        -> 'dct'
+    'NaiveCompressor'      -> 'naive'
+    'DifferentialCompressor' -> 'differential'
+    'SparseCompressor'     -> 'sparse'
+    'DirectReconstructor'  -> 'direct'
+    """
+    return (class_name
+            .replace('Compressor', '')
+            .replace('Reconstructor', '')
+            .lower())
+
+
 class Compressor(ABC):
     """
     Abstract base class for compression algorithms.
@@ -106,15 +124,9 @@ class ImageCompressor(Compressor):
         self.original_dtype = None
     
     def _preprocess_image(self, image: np.ndarray) -> np.ndarray:
-        """Preprocess image before compression"""
+        """Preprocess image before compression. Preserves color channels."""
         self.original_shape = image.shape
         self.original_dtype = image.dtype
-        
-        # Ensure grayscale
-        if len(image.shape) == 3:
-            # Convert to grayscale if color
-            image = np.dot(image[...,:3], [0.299, 0.587, 0.114])
-        
         return image.astype(np.uint8)
     
     def _create_metadata(self) -> Dict[str, Any]:
@@ -122,7 +134,7 @@ class ImageCompressor(Compressor):
         return {
             'shape': self.original_shape,
             'dtype': str(self.original_dtype),
-            'method': self.name,
+            'method': _registry_key(self.__class__.__name__),
         }
 
 

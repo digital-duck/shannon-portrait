@@ -10,36 +10,43 @@ from typing import Optional, Tuple
 
 def load_image(filepath: str) -> np.ndarray:
     """
-    Load image from file.
-    
+    Load image from file preserving color channels.
+
     Args:
         filepath: Path to image file
-        
+
     Returns:
-        Image as numpy array (grayscale uint8)
+        Image as numpy array: (H, W) for grayscale or (H, W, 3) for RGB, dtype uint8.
     """
     img = Image.open(filepath)
-    
-    # Convert to grayscale if needed
-    if img.mode != 'L':
-        img = img.convert('L')
-    
+
+    if img.mode == 'L':
+        return np.array(img, dtype=np.uint8)
+
+    # Normalise to RGB (handles RGBA, P, CMYK, etc.)
+    img = img.convert('RGB')
     return np.array(img, dtype=np.uint8)
 
 
 def save_image(array: np.ndarray, filepath: str):
     """
     Save numpy array as image file.
-    
+
     Args:
-        array: Image array
+        array: Image array — (H, W) for grayscale or (H, W, 3) for RGB.
         filepath: Output path
     """
-    # Ensure uint8
     if array.dtype != np.uint8:
         array = array.astype(np.uint8)
-    
-    img = Image.fromarray(array, mode='L')
+
+    if array.ndim == 2:
+        img = Image.fromarray(array, mode='L')
+    elif array.ndim == 3 and array.shape[2] == 3:
+        img = Image.fromarray(array, mode='RGB')
+    else:
+        # Fallback: squeeze extra dims and save as grayscale
+        img = Image.fromarray(array.squeeze(), mode='L')
+
     img.save(filepath)
 
 

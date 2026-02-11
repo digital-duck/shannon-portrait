@@ -29,7 +29,7 @@ shannon-portrait/
 │   │   └── reconstructors/
 │   │       └── image/                  # 🚧 Templates ready
 │   ├── ui/
-│   │   ├── app.py                      # ✅ Main Streamlit app
+│   │   ├── InfoCoDec.py                # ✅ Main Streamlit app
 │   │   └── pages/
 │   │       ├── 1_⚙️_Settings.py        # ✅ Complete with OpenRouter config
 │   │       ├── 2_📤_Encode.py          # 🚧 Template ready
@@ -69,12 +69,12 @@ shannon-portrait/
    - ✅ `infocodec encode` - with auto-detection
    - ✅ `infocodec decode` - placeholder for reconstruction
    - ✅ `infocodec benchmark` - compare all methods
-   - ✅ `infocodec ui` - launch Streamlit
+   - ✅ `infocodec-ui` - launch Streamlit
    - Auto media-type detection
    - Verbose mode
    - Multiple output formats (table, JSON, markdown)
 
-4. **Streamlit UI** (`ui/app.py` + `pages/`)
+4. **Streamlit UI** (`ui/InfoCoDec.py` + `pages/`)
    - ✅ Main landing page with navigation
    - ✅ Settings page with full configuration
    - ✅ OpenRouter integration setup
@@ -148,13 +148,13 @@ infocodec encode --input shannon.png --method auto
 infocodec benchmark --input shannon.png --methods all
 
 # Launch UI
-infocodec ui
+infocodec-ui
 ```
 
 ### Run UI Directly
 
 ```bash
-streamlit run infocodec/ui/app.py
+streamlit run infocodec/ui/InfoCoDec.py
 ```
 
 ---
@@ -356,7 +356,7 @@ Ready to implement caching logic in compressors.
    ```bash
    pip install -e .
    infocodec --help
-   streamlit run infocodec/ui/app.py
+   streamlit run infocodec/ui/InfoCoDec.py
    ```
 
 3. **Add compression algorithms**:
@@ -421,6 +421,12 @@ You now have a **complete, professional-grade project structure** for your Shann
 
 The project is **production-ready infrastructure** waiting for you to plug in the compression algorithms you've already developed in the tutorials!
 
+
+## References
+- https://missionencodeable.com/blog/computing-legends-claude-shannon#blog-content
+- https://www.wikiwand.com/en/articles/Claude_Shannon
 ---
+
+
 
 🎉 **Ready to explore Shannon's Information Theory!** 🎉

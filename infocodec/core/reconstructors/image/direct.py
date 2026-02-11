@@ -36,17 +36,15 @@ class DirectReconstructor(ImageReconstructor):
         
         # Reshape
         if isinstance(shape, (list, tuple)) and len(shape) >= 2:
-            height, width = shape[0], shape[1]
-            expected_size = height * width
-            
-            # Handle size mismatch
+            expected_size = int(np.prod(shape))
+
             if len(flat_data) < expected_size:
-                flat_data = np.pad(flat_data, (0, expected_size - len(flat_data)), 
+                flat_data = np.pad(flat_data, (0, expected_size - len(flat_data)),
                                   mode='edge')
             elif len(flat_data) > expected_size:
                 flat_data = flat_data[:expected_size]
-            
-            reconstructed = flat_data.reshape(height, width)
+
+            reconstructed = flat_data.reshape(shape)
         else:
             reconstructed = flat_data
         

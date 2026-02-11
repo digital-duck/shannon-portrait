@@ -144,8 +144,8 @@ class HuffmanCompressor(ImageCompressor):
             return
         
         if node.symbol is not None:
-            # Leaf node
-            self.huffman_codes[node.symbol] = code if code else "0"
+            # Leaf node — cast to native int so keys are JSON-serialisable
+            self.huffman_codes[int(node.symbol)] = code if code else "0"
         else:
             # Internal node
             if node.left:

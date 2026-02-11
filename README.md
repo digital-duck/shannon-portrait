@@ -30,27 +30,32 @@ pip install shannon-portrait
 ### CLI Usage
 
 ```bash
+conda create -n st python=3.11
+conda activate st
+
+
 # Encode an image
-infocodec encode --input shannon.png --method huffman
+cd data/input/image
+infocodec encode --input shannon-4.png  --method huffman
 
 # Decode compressed data
-infocodec decode --input compressed.dat --output restored.png
+infocodec decode --input ~/projects/digital-duck/shannon-portrait/data/output/image/shannon-4_image_huffman.dat --output ~/projects/digital-duck/shannon-portrait/data/input/image/shannon-4-restored.png
 
 # Benchmark all methods
 infocodec benchmark --input shannon.png --methods all
 
 # Launch interactive UI
-infocodec ui
+infocodec-ui
 ```
 
 ### Streamlit UI
 
 ```bash
 # Launch web interface
-streamlit run infocodec/ui/app.py
+streamlit run infocodec/ui/InfoCoDec.py
 
 # Or via CLI
-infocodec ui
+infocodec-ui
 ```
 
 ## 📚 Features
@@ -106,7 +111,7 @@ shannon-portrait/
 │   │           ├── progressive.py
 │   │           └── error_recovery.py
 │   ├── ui/                     # Streamlit interface
-│   │   ├── app.py              # Main app
+│   │   ├── InfoCoDec.py        # Main app
 │   │   ├── pages/              # Multi-page app
 │   │   │   ├── 1_⚙️_Settings.py
 │   │   │   ├── 2_📤_Encode.py
@@ -314,6 +319,23 @@ MIT License - see [LICENSE](LICENSE) file.
 
 - **Issues**: [GitHub Issues](https://github.com/yourusername/shannon-portrait/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/yourusername/shannon-portrait/discussions)
+
+## 🐘 Broader Context: Elegant Elephant
+
+This project is one instrument in a larger research programme called **Elegant Elephant**, which proposes that compression, dimensionality reduction, quantum measurement, symmetry breaking, and philosophical notions of illusion are all the *same underlying process* — projection from a higher-dimensional reality to a lower-dimensional observable one.
+
+Within that framework, `shannon-portrait` studies the **information theory axis**:
+
+| Elegant Elephant concept | This project's concrete form |
+|---|---|
+| Projection operator `π: H → L` | Each compression algorithm (DCT, Huffman, RLE, …) |
+| Information loss `I(H) > I(π(H))` | Entropy, PSNR, SSIM, compression ratio metrics |
+| Irreversibility of projection | Lossy vs lossless reconstruction experiments |
+| Different projections reveal different aspects | Benchmark comparison across all methods |
+
+The manifold learning axis (PHATE, t-SNE, PCA as projection operators) is studied in a sibling instrument: **Semanscope**.
+
+See [`README-Elegant-Elephant.md`](../zinets/README-Elegant-Elephant.md) for the full unified framework.
 
 ---
 

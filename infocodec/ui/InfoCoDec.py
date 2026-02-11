@@ -48,13 +48,13 @@ def main():
     # Sidebar
     with st.sidebar:
         st.image("https://via.placeholder.com/200x200.png?text=Shannon+Portrait", 
-                use_container_width=True)
+                use_column_width=True)
         st.markdown("### Navigation")
         st.markdown("""
         Use the pages in the sidebar to:
         - **⚙️ Settings**: Configure algorithms and LLM
-        - **📤 Encode**: Compress your data  
-        - **📥 Decode**: Reconstruct from compressed
+        - **🗜️ Encode**: Compress your data
+        - **🖼️ Decode**: Reconstruct from compressed
         - **📊 Diff**: Analyze quality loss
         - **📝 Summarize**: Generate AI report
         """)

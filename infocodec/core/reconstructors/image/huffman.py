@@ -77,17 +77,16 @@ class HuffmanReconstructor(ImageReconstructor):
                 
                 # Reshape
                 if isinstance(shape, (list, tuple)) and len(shape) >= 2:
-                    height, width = shape[0], shape[1]
-                    expected_size = height * width
-                    
+                    expected_size = int(np.prod(shape))
+
                     if len(decoded_array) < expected_size:
                         decoded_array = np.pad(decoded_array,
                                               (0, expected_size - len(decoded_array)),
                                               mode='edge')
                     elif len(decoded_array) > expected_size:
                         decoded_array = decoded_array[:expected_size]
-                    
-                    reconstructed = decoded_array.reshape(height, width)
+
+                    reconstructed = decoded_array.reshape(shape)
                 else:
                     reconstructed = decoded_array
         

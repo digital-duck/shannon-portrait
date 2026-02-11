@@ -11,9 +11,9 @@ import time
 
 from infocodec.core.reconstructors import RECONSTRUCTORS
 
-st.set_page_config(page_title="Decode - InfoCodec", page_icon="📥", layout="wide")
+st.set_page_config(page_title="Decode - InfoCodec", page_icon="🖼️", layout="wide")
 
-st.title("📥 Decode (Reconstruct)")
+st.title("🖼️ Decode (Reconstruct)")
 st.markdown("Reconstruct images from compressed data.")
 
 # Check if we have encoded data from Encode page
@@ -37,7 +37,7 @@ with col1:
         
         # Show original for reference
         st.subheader("Original Image (Reference)")
-        st.image(data['original'], use_container_width=True, clamp=True)
+        st.image(data['original'], use_column_width=True, clamp=True)
         
         use_encoded_data = st.checkbox("Use this data", value=True)
     else:
@@ -106,7 +106,7 @@ with col2:
             recon_data = st.session_state.reconstructed_data
             
             st.subheader("Reconstructed Image")
-            st.image(recon_data['image'], use_container_width=True, clamp=True)
+            st.image(recon_data['image'], use_column_width=True, clamp=True)
             
             # Stats
             with st.expander("📊 Reconstruction Stats"):
@@ -155,17 +155,17 @@ with col2:
             
             with col1:
                 st.markdown("**Original**")
-                st.image(original, use_container_width=True, clamp=True)
+                st.image(original, use_column_width=True, clamp=True)
             
             with col2:
                 st.markdown("**Reconstructed**")
-                st.image(reconstructed, use_container_width=True, clamp=True)
+                st.image(reconstructed, use_column_width=True, clamp=True)
             
             with col3:
                 st.markdown("**Difference (Amplified)**")
                 diff = np.abs(original.astype(int) - reconstructed.astype(int))
                 diff_amplified = np.clip(diff * 10, 0, 255).astype(np.uint8)
-                st.image(diff_amplified, use_container_width=True, clamp=True)
+                st.image(diff_amplified, use_column_width=True, clamp=True)
             
             # Next steps
             st.info("👉 Go to **Diff** page for detailed analysis!")

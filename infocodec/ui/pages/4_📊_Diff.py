@@ -15,6 +15,7 @@ from infocodec.core.metrics import (
     format_metrics_report,
     analyze_data_distribution
 )
+from infocodec.utils.paths import make_output_filename
 
 st.set_page_config(page_title="Diff - InfoCodec", page_icon="📊", layout="wide")
 
@@ -81,18 +82,18 @@ with tab1:
     
     with col1:
         st.markdown("**Original**")
-        st.image(original, use_container_width=True, clamp=True)
+        st.image(original, use_column_width=True, clamp=True)
         st.caption(f"Size: {original.shape[0]}×{original.shape[1]}")
     
     with col2:
         st.markdown("**Reconstructed**")
-        st.image(reconstructed, use_container_width=True, clamp=True)
+        st.image(reconstructed, use_column_width=True, clamp=True)
         st.caption(f"Method: {method.upper()}")
     
     with col3:
         st.markdown("**Absolute Difference**")
         diff = np.abs(original.astype(int) - reconstructed.astype(int)).astype(np.uint8)
-        st.image(diff, use_container_width=True, clamp=True)
+        st.image(diff, use_column_width=True, clamp=True)
         st.caption(f"Max error: {np.max(diff)}")
     
     # Difference heatmap
@@ -271,26 +272,28 @@ with tab4:
     st.code(report, language='text')
     
     # Download options
+    import json
+    _stem = st.session_state.get('input_stem', 'encoded')
+    _report_filename = make_output_filename(_stem, "image", method, "txt", prefix="report")
+    _metrics_filename = make_output_filename(_stem, "image", method, "json", prefix="metrics")
+
     col1, col2 = st.columns(2)
-    
+
     with col1:
-        # Download as text
         st.download_button(
             label="💾 Download Report (TXT)",
             data=report,
-            file_name=f"compression_report_{method}.txt",
+            file_name=_report_filename,
             mime="text/plain",
             use_container_width=True
         )
-    
+
     with col2:
-        # Download as JSON
-        import json
         json_report = json.dumps(analysis, indent=2)
         st.download_button(
             label="💾 Download Metrics (JSON)",
             data=json_report,
-            file_name=f"compression_metrics_{method}.json",
+            file_name=_metrics_filename,
             mime="application/json",
             use_container_width=True
         )

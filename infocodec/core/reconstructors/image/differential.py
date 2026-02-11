@@ -37,17 +37,16 @@ class DifferentialReconstructor(ImageReconstructor):
         
         # Handle size and reshape
         if isinstance(shape, (list, tuple)) and len(shape) >= 2:
-            height, width = shape[0], shape[1]
-            expected_size = height * width
-            
+            expected_size = int(np.prod(shape))
+
             if len(reconstructed_flat) < expected_size:
-                reconstructed_flat = np.pad(reconstructed_flat, 
+                reconstructed_flat = np.pad(reconstructed_flat,
                                            (0, expected_size - len(reconstructed_flat)),
                                            mode='edge')
             elif len(reconstructed_flat) > expected_size:
                 reconstructed_flat = reconstructed_flat[:expected_size]
-            
-            reconstructed = reconstructed_flat.reshape(height, width)
+
+            reconstructed = reconstructed_flat.reshape(shape)
         else:
             reconstructed = reconstructed_flat
         

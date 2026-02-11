@@ -254,10 +254,10 @@ infocodec benchmark --input noise.png --methods all
 
 ```bash
 # Start Streamlit
-streamlit run infocodec/ui/app.py
+streamlit run infocodec/ui/InfoCoDec.py
 
 # Or use CLI shortcut
-infocodec ui
+infocodec-ui
 ```
 
 Browser should open at: http://localhost:8501

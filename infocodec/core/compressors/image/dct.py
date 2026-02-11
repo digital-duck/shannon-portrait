@@ -44,8 +44,10 @@ class DCTCompressor(ImageCompressor):
             compressed_bytes: DCT coefficients
             metadata: Image dimensions and DCT parameters
         """
-        # Preprocess
+        # Preprocess — DCT operates on a 2D spatial grid, so reduce to grayscale
         image = self._preprocess_image(data)
+        if image.ndim == 3:
+            image = np.dot(image[..., :3], [0.299, 0.587, 0.114]).astype(np.uint8)
         height, width = image.shape
         
         # Pad image to multiple of block_size

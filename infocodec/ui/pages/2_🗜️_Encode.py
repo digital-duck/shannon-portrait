@@ -10,14 +10,16 @@ import numpy as np
 from PIL import Image
 import io
 import time
+from pathlib import Path
 
 from infocodec.core.compressors import COMPRESSORS
 from infocodec.core.metrics import calculate_entropy, comprehensive_quality_analysis
 from infocodec.utils.image_utils import create_test_image
+from infocodec.utils.paths import make_output_filename, quality_qualifier, sampling_rate_qualifier
 
-st.set_page_config(page_title="Encode - InfoCodec", page_icon="📤", layout="wide")
+st.set_page_config(page_title="Encode - InfoCodec", page_icon="🗜️", layout="wide")
 
-st.title("📤 Encode (Compress)")
+st.title("🗜️ Encode (Compress)")
 st.markdown("Upload an image and compress it using various methods.")
 
 # Initialize session state
@@ -52,36 +54,39 @@ with col1:
             type=['png', 'jpg', 'jpeg', 'bmp'],
             help="Upload a PNG, JPG, or BMP image"
         )
-        
+
         if uploaded_file is not None:
             # Load image
             image_pil = Image.open(uploaded_file)
-            
-            # Convert to grayscale
-            if image_pil.mode != 'L':
-                image_pil = image_pil.convert('L')
-            
-            original_image = np.array(image_pil, dtype=np.uint8)
-            
+
+            # Normalise to RGB; keep native grayscale as-is
+            if image_pil.mode == 'L':
+                original_image = np.array(image_pil, dtype=np.uint8)
+            else:
+                original_image = np.array(image_pil.convert('RGB'), dtype=np.uint8)
+            # Track input stem for output filename derivation
+            st.session_state['input_stem'] = Path(uploaded_file.name).stem
+
             st.success(f"✅ Loaded: {original_image.shape[0]}×{original_image.shape[1]} pixels")
-    
+
     else:  # Generate Test Pattern
         pattern = st.selectbox(
             "Pattern Type",
             options=['gradient', 'blocks', 'noise', 'checkerboard'],
             help="Different patterns have different compression characteristics"
         )
-        
+
         size = st.slider("Image Size", min_value=32, max_value=256, value=128, step=32)
-        
+
         if st.button("🎨 Generate Pattern"):
             original_image = create_test_image(size=(size, size), pattern=pattern)
+            st.session_state['input_stem'] = f"test_{pattern}_{size}x{size}"
             st.success(f"✅ Generated {pattern} pattern: {size}×{size} pixels")
     
     # Display original image
     if original_image is not None:
         st.subheader("Original Image")
-        st.image(original_image, use_container_width=True, clamp=True)
+        st.image(original_image, use_column_width=True, clamp=True)
         
         # Image info
         with st.expander("📊 Image Information"):
@@ -221,11 +226,20 @@ if st.session_state.encoded_data:
             st.text(f"Time: {data['elapsed_time']:.3f}s")
             st.text(f"Speed: {data['original'].size / data['elapsed_time']:.0f} pixels/s")
     
-    # Download button
+    # Build descriptive filename: {stem}_image_{method}[_{qualifier}].dat
+    _stem = st.session_state.get('input_stem', 'encoded')
+    _method = data['method']
+    _qualifier = None
+    if _method == 'dct':
+        _qualifier = quality_qualifier(data['stats'].get('quality', 0.8))
+    elif _method == 'sparse':
+        _qualifier = sampling_rate_qualifier(data['stats'].get('sampling_rate', 4))
+    _dat_filename = make_output_filename(_stem, "image", _method, "dat", qualifier=_qualifier)
+
     st.download_button(
         label="💾 Download Compressed Data",
         data=data['compressed_bytes'],
-        file_name=f"compressed_{data['method']}.dat",
+        file_name=_dat_filename,
         mime="application/octet-stream",
         use_container_width=True
     )
